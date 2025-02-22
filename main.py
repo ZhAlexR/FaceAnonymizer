@@ -20,4 +20,8 @@ async def upload_file(file: UploadFile):
     file_destination = f"./user_temp_files/{file.filename}"
     with open(file_destination, "wb") as file_path:
         shutil.copyfileobj(file.file, file_path)
-    return JSONResponse(content={"message": "Files uploaded successfully!", "file_paths": file_path})
+    return JSONResponse(content={"message": "Files uploaded successfully!", "file_name": file.filename})
+
+@app.get("/anonymize/")
+async def anonymize_file(file_name: str):
+    pass
