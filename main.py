@@ -2,21 +2,21 @@ import os
 import shutil
 
 from fastapi import FastAPI, UploadFile
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from anonymizer import anonymize_file
 
 app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+    with open("static/index.html", "r") as f:
+        return HTMLResponse(content=f.read())
 
 @app.post("/upload/")
 async def upload_file(file: UploadFile):
@@ -33,4 +33,8 @@ async def anonymize(file_name: str):
 @app.get("/download/{file_name}")
 async def download_file(file_name: str):
     path_to_file = os.path.join("user_temp_files", file_name)
-    return FileResponse(path=path_to_file)
+    return FileResponse(
+        path=path_to_file,
+        filename=file_name,
+        media_type='application/octet-stream'
+    )
