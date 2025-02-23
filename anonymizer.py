@@ -43,6 +43,7 @@ class FaceAnonymizer:
 
         full_path = f"{image_path}/{image_name}.{image_extension}"
         cv2.imwrite(full_path, self._image)
+        return f"{image_name}.{image_extension}"
 
     @property
     def image_rgb(self):
@@ -62,3 +63,11 @@ class FaceAnonymizer:
     def _blur_face(self, face_coordinates: tuple[int, int, int, int]):
         x1, y1, x2, y2 = face_coordinates
         self._image[y1: y1 + y2, x1: x1 + x2, :] = cv2.blur(self._image[y1: y1 + y2, x1: x1 + x2, :], self._blur_kernel_size)
+
+
+def anonymize_file(file_name: str):
+    path_to_file = os.path.join("user_temp_files", file_name)
+    face_anonymizer = FaceAnonymizer(image_path=path_to_file)
+
+    face_anonymizer.blur_faces()
+    return face_anonymizer.save_image()
