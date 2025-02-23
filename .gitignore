@@ -95,3 +95,4 @@ fabric.properties
 .venv
 
 user_temp_files/
+__pycache__/
