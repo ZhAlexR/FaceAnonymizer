@@ -1,0 +1,48 @@
+# Python-specific ignores
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Dependency management
+pipdeptree_output.txt  # If you save pipdeptree output
+*.log
+
+# Git-related
+.git
+.gitignore
+
+# Docker-specific
+Dockerfile
+.dockerignore
+
+# Common caches and temporary files
+*.cache
+*.bak
+*.swp
+*~
+
+# Sensitive or local config files
+*.secret
+*.key
+*.pem
+
+# Documentation and miscellaneous
+*.md
+LICENSE
+tests/
+docs/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+user_temp_files/
