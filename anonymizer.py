@@ -46,7 +46,7 @@ class FaceAnonymizer:
         return self._image
 
     def _check_image_exists(self):
-        if not self.image:
+        if not self._image:
             raise ValueError(
                 "You have to provide an image before blurring!\n"
                 "Initialize FaceAnonymizer `instance` and use `instance.image = image`"
@@ -57,10 +57,10 @@ class FaceAnonymizer:
 
     def _get_face_border_box_coordinates(self, face: NamedTuple) -> tuple[int, int, int, int]:
         bbox = face.location_data.relative_bounding_box
-        x1, y1, x2, y2 = bbox.xmin, bbox.ymin, bbox.width, bbox.height
+        x_min, y_min, width, height = bbox.xmin, bbox.ymin, bbox.width, bbox.height
         img_height, img_width, _ = self._image.shape
 
-        return int(x1 * img_width), int(y1 * img_height), int(x2 * img_width), int(y2 * img_width)
+        return int(x_min * img_width), int(y_min * img_height), int(width * img_width), int(height * img_width)
 
     def _blur_face(self, face_coordinates: tuple[int, int, int, int]):
         x1, y1, x2, y2 = face_coordinates
@@ -98,7 +98,7 @@ def blur_and_save_video(face_anonymizer: FaceAnonymizer, path_to_file: str) -> s
     return output_file_path
 
 
-def anonymize_file(file_name: str, file_type: str):
+def process_and_save_anonymized_file(file_name: str, file_type: str):
     path_to_file = os.path.join(DEFAULT_FILE_FOLDER, file_name)
     face_detector = FaceDetection(model_selection=0, min_detection_confidence=0.7)
     face_anonymizer = FaceAnonymizer(face_detector=face_detector, blur_weight=100)
@@ -113,4 +113,4 @@ def anonymize_file(file_name: str, file_type: str):
 
 
 if __name__ == "__main__":
-    anonymize_file("alina_video.mp4", "video")
+    process_and_save_anonymized_file("alina_video.mp4", "video")
