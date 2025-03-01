@@ -69,7 +69,7 @@ def blur_and_save_image(face_anonymizer: FaceAnonymizer, path_to_image: str):
     cv2.imwrite(path_to_image, image)
     return path_to_image
 
-def blur_video(face_anonymizer: FaceAnonymizer, path_to_file: str):
+def blur_and_save_video(face_anonymizer: FaceAnonymizer, path_to_file: str):
     video = cv2.VideoCapture(path_to_file)
     ret, frame = video.read()
 
@@ -102,7 +102,7 @@ def anonymize_file(file_name: str, file_type: str):
         return blur_and_save_image(face_anonymizer, path_to_file)
 
     if file_type == "video":
-        return blur_video(face_anonymizer, path_to_file)
+        return blur_and_save_video(face_anonymizer, path_to_file)
 
     face_detector.close()
 
