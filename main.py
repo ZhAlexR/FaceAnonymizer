@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Literal
 
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
@@ -26,8 +27,8 @@ async def upload_file(file: UploadFile):
     return JSONResponse(content={"message": "Files uploaded successfully!", "file_name": file.filename})
 
 @app.get("/anonymize/{file_name}")
-async def anonymize(file_name: str):
-    file_name = anonymize_file(file_name)
+async def anonymize(file_name: str, file_type: Literal["photo", "video"]):
+    file_name = anonymize_file(file_name, file_type)
     return JSONResponse(content={"message": "File successfully anonymized and saved!", "file_name": file_name})
 
 @app.get("/download/{file_name}")
