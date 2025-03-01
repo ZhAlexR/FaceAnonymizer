@@ -1,5 +1,5 @@
 import os.path
-from typing import NamedTuple
+from typing import NamedTuple, Literal
 
 import cv2
 from cv2.typing import MatLike
@@ -8,12 +8,24 @@ from mediapipe.python.solutions.face_detection import FaceDetection
 
 class FaceAnonymizer:
 
-    def __init__(self, image_path: str, blur_weight: int = 50):
-        self.image_path: str = image_path
+    def __init__(self, face_detector: FaceDetection, blur_weight: int = 50):
         self._blur_kernel_size: tuple[int, int] = (blur_weight, ) * 2
-        self._image: MatLike = cv2.imread(image_path)
-        self._face_detector: FaceDetection = FaceDetection(model_selection=1, min_detection_confidence=0.5)
+        self._image: MatLike | None = None
+        self._face_detector: FaceDetection = face_detector
         self._image_processed = False
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, image: MatLike):
+        self._image = image
+
+    @property
+    def image_rgb(self):
+        return cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB)
+
 
     def blur_faces(self):
         faces = self._detect_faces().detections
@@ -25,33 +37,15 @@ class FaceAnonymizer:
             x1, y1, x2, y2 = self._get_face_border_box_coordinates(face)
             self._blur_face((x1, y1, x2, y2))
 
-        self._image_processed = True
+        return self._image
 
-    def save_image(self, image_name: str = None):
-
-        if self._image_processed is False:
-            print("Sorry, but you have to execute 'blur_faces' first")
-            return
-
-        split_path = self.image_path.split("/")
-        image_path = os.path.join(*split_path[:-1])
-        current_image_name_with_extension = split_path[-1]
-        current_image_name, image_extension = current_image_name_with_extension.split(".")
-
-        if image_name is None:
-            image_name = f"{current_image_name}_blured"
-
-        full_path = f"{image_path}/{image_name}.{image_extension}"
-        cv2.imwrite(full_path, self._image)
-        return f"{image_name}.{image_extension}"
-
-    @property
-    def image_rgb(self):
-        return cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB)
+    def _check_image_exists(self):
+        if not self.image:
+            raise ("You have to set provide image before blurring!\n"
+                   "Initialize FaceAnonymizer `instance` and use `instance.image = image`")
 
     def _detect_faces(self):
-        with self._face_detector as detector:
-            return detector.process(self.image_rgb)
+        return self._face_detector.process(self.image_rgb)
 
     def _get_face_border_box_coordinates(self, face: NamedTuple):
         bbox = face.location_data.relative_bounding_box
@@ -65,9 +59,50 @@ class FaceAnonymizer:
         self._image[y1: y1 + y2, x1: x1 + x2, :] = cv2.blur(self._image[y1: y1 + y2, x1: x1 + x2, :], self._blur_kernel_size)
 
 
-def anonymize_file(file_name: str):
-    path_to_file = os.path.join("user_temp_files", file_name)
-    face_anonymizer = FaceAnonymizer(image_path=path_to_file)
+def blur_and_save_image(face_anonymizer: FaceAnonymizer, path_to_image: str):
+    image = cv2.imread(path_to_image)
+    face_anonymizer.image = image
+    image = face_anonymizer.blur_faces()
+    cv2.imwrite(path_to_image, image)
+    return path_to_image
 
-    face_anonymizer.blur_faces()
-    return face_anonymizer.save_image()
+def blur_video(face_anonymizer: FaceAnonymizer, path_to_file: str):
+    video = cv2.VideoCapture(path_to_file)
+    ret, frame = video.read()
+
+    output_file_path = os.path.join(".", "user_temp_files", "output.mp4")
+    output_video = cv2.VideoWriter(
+        output_file_path,
+        cv2.VideoWriter_fourcc(*'mp4v'),
+        25,
+        (frame.shape[1], frame.shape[0])
+    )
+
+    while ret:
+        face_anonymizer.image = frame
+        frame = face_anonymizer.blur_faces()
+        output_video.write(frame)
+
+        ret, frame = video.read()
+
+    video.release()
+    output_video.release()
+    return output_file_path
+
+
+def anonymize_file(file_name: str, file_type: str):
+    path_to_file = os.path.join("user_temp_files", file_name)
+    face_detector = FaceDetection(model_selection=0, min_detection_confidence=0.7)
+    face_anonymizer = FaceAnonymizer(face_detector=face_detector, blur_weight=100)
+
+    if file_type == "photo":
+        return blur_and_save_image(face_anonymizer, path_to_file)
+
+    if file_type == "video":
+        return blur_video(face_anonymizer, path_to_file)
+
+    face_detector.close()
+
+
+if __name__ == "__main__":
+    anonymize_file("alina_video.mp4", "video")

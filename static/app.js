@@ -1,4 +1,5 @@
 const fileInput = document.getElementById('fileInput');
+const fileTypeSelect = document.getElementById('file_type'); // Added file type select
 const anonymizeBtn = document.getElementById('anonymizeBtn');
 const status = document.getElementById('status');
 const downloadLink = document.getElementById('downloadLink');
@@ -35,7 +36,10 @@ anonymizeBtn.addEventListener('click', async () => {
         uploadedFileName = uploadData.file_name;
         status.textContent = 'File uploaded. Anonymizing...';
 
-        const anonymizeResponse = await fetch(`${backendUrl}/anonymize/${uploadedFileName}`);
+        const fileType = fileTypeSelect.value;
+
+        debugger;
+        const anonymizeResponse = await fetch(`${backendUrl}/anonymize/${uploadedFileName}?file_type=${fileType}`);
         const anonymizeData = await anonymizeResponse.json();
         if (!anonymizeResponse.ok) throw new Error(anonymizeData.detail || 'Anonymization failed');
         const anonymizedFileName = anonymizeData.file_name;
