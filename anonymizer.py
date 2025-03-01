@@ -82,13 +82,6 @@ def _get_output_file_path(input_path: str, output_file_name: str = None) -> str:
     return output_file_path
 
 
-def _save_blurred_file(input_path: str, blurred_content: MatLike, output_file_name: str = None) -> str:
-
-    output_path = _get_output_file_path(input_path, output_file_name)
-    cv2.imwrite(output_path, blurred_content)
-    return output_path
-
-
 def blur_and_save_image(face_anonymizer: FaceAnonymizer, path_to_image: str, output_file_name: str = None) -> str:
 
     if not os.path.exists(path_to_image):
@@ -99,7 +92,9 @@ def blur_and_save_image(face_anonymizer: FaceAnonymizer, path_to_image: str, out
         raise ValueError(f"Failed to load image from {path_to_image}")
 
     blurred_image = face_anonymizer.blur_faces(image)
-    return _save_blurred_file(path_to_image, blurred_image, output_file_name)
+    output_path = _get_output_file_path(path_to_image, output_file_name)
+    cv2.imwrite(output_path, blurred_image)
+    return output_path
 
 
 def blur_and_save_video(face_anonymizer: FaceAnonymizer, path_to_file: str, output_file_name: str = None) -> str:
@@ -152,7 +147,7 @@ if __name__ == "__main__":
         result = process_and_save_anonymized_file("video_to_blur.mp4", "video")
         print(f"Processed file saved to: {result}")
 
-        result = process_and_save_anonymized_file("photo_to_blur.jpg", "photo",)
+        result = process_and_save_anonymized_file("photo_to_blur.jpg", "photo", "custom_blured_file.jpg")
         print(f"Processed file saved to: {result}")
     except (FileNotFoundError, ValueError) as e:
         print(f"Error: {e}")
