@@ -28,6 +28,9 @@ class FaceAnonymizer:
 
 
     def blur_faces(self):
+
+        self._check_image_exists()
+
         faces = self._detect_faces().detections
 
         if faces is None:
