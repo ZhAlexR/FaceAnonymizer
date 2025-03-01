@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from anonymizer import anonymize_file
+from anonymizer import process_and_save_anonymized_file
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -28,7 +28,7 @@ async def upload_file(file: UploadFile):
 
 @app.get("/anonymize/{file_name}")
 async def anonymize(file_name: str, file_type: Literal["photo", "video"]):
-    file_name = anonymize_file(file_name, file_type)
+    file_name = process_and_save_anonymized_file(file_name, file_type)
     return JSONResponse(content={"message": "File successfully anonymized and saved!", "file_name": file_name})
 
 @app.get("/download/{file_name}")
