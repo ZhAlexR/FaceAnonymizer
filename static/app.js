@@ -1,8 +1,8 @@
 const fileInput = document.getElementById('fileInput');
-const fileTypeSelect = document.getElementById('file_type'); // Added file type select
+const fileTypeSelect = document.getElementById('file_type');
 const anonymizeBtn = document.getElementById('anonymizeBtn');
 const status = document.getElementById('status');
-const downloadLink = document.getElementById('downloadLink');
+const downloadBtn = document.getElementById('downloadBtn');
 const backendUrl = 'http://localhost:8000';
 
 let uploadedFileName = '';
@@ -10,8 +10,37 @@ let uploadedFileName = '';
 fileInput.addEventListener('change', () => {
     anonymizeBtn.disabled = !fileInput.files.length;
     status.textContent = fileInput.files.length ? 'File selected. Click "Anonymize" to process.' : '';
-    downloadLink.style.display = 'none';
 });
+
+async function downloadFile(event) {
+   try {
+       const fileName = event.target.value;
+       const response = await fetch(`${backendUrl}/download/${fileName}`)
+
+       if (!response.ok) {
+           throw new Error(response.detail);
+       }
+
+       const blobFile = await response.blob();
+       const ulr = window.URL.createObjectURL(blobFile);
+
+       const link = document.createElement("a");
+       link.href = ulr;
+       link.download = event.target.value;
+       document.body.appendChild(link);
+
+       link.click();
+
+       document.body.removeChild(link);
+       window.URL.revokeObjectURL(ulr);
+
+       status.textContent = "Successfully downloaded"
+
+   } catch (error) {
+       console.log("Download is failed:" , error)
+       status.textContent = `Download is failed: ${error}`
+   }
+}
 
 anonymizeBtn.addEventListener('click', async () => {
     const file = fileInput.files[0];
@@ -38,17 +67,15 @@ anonymizeBtn.addEventListener('click', async () => {
 
         const fileType = fileTypeSelect.value;
 
-        debugger;
         const anonymizeResponse = await fetch(`${backendUrl}/anonymize/${uploadedFileName}?file_type=${fileType}`);
         const anonymizeData = await anonymizeResponse.json();
         if (!anonymizeResponse.ok) throw new Error(anonymizeData.detail || 'Anonymization failed');
-        const anonymizedFileName = anonymizeData.file_name;
         status.textContent = 'Anonymization complete!';
+        const anonymizedFileName = anonymizeData.file_name;
 
-        downloadLink.href = `${backendUrl}/download/${anonymizedFileName}`;
-        downloadLink.download = anonymizedFileName;
-        downloadLink.style.display = 'block';
-        downloadLink.textContent = `Download ${anonymizedFileName}`;
+        downloadBtn.value = anonymizedFileName.split("/").at(-1);
+        downloadBtn.addEventListener("click", downloadFile);
+        downloadBtn.disabled = false;
     } catch (error) {
         status.textContent = `Error: ${error.message}`;
     } finally {
