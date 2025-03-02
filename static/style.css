@@ -6,9 +6,11 @@ body {
     padding: 20px;
     background-color: #f0f0f0;
 }
+
 h1 {
     color: #333;
 }
+
 .container {
     background-color: white;
     padding: 20px;
@@ -18,9 +20,11 @@ h1 {
     max-width: 500px;
     text-align: center;
 }
+
 input[type="file"] {
     margin: 10px 0;
 }
+
 button {
     background-color: #4CAF50;
     color: white;
@@ -30,23 +34,21 @@ button {
     cursor: pointer;
     margin: 10px 0;
 }
+
 button:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
 }
+
 button:hover:not(:disabled) {
     background-color: #45a049;
 }
+
 #status {
     margin: 10px 0;
     color: #555;
 }
-#downloadLink {
-    display: none;
-    margin-top: 10px;
-    color: #0066cc;
-    text-decoration: none;
-}
-#downloadLink:hover {
-    text-decoration: underline;
+
+#file_type {
+    margin-right: 10px;
 }
